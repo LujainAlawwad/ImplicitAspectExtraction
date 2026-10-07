@@ -236,53 +236,6 @@ Test files and `Arabic_train.csv` use:
 files are closer to the upstream M-ABSA release and use a reduced schema
 (`m-absa-english-train.csv` names the text column `text` rather than `sentence`).
 
-### Serialization caveat
-
-The conversion to CSV was done per corpus, so `aspect` and `category` are **not
-serialized uniformly across files**. Three forms occur, and some files mix the
-first two row by row:
-
-| File | `aspect` | `category` |
-|---|---|---|
-| `English_train.csv`, `test_acos.csv` | scalar | scalar |
-| `Arabic_test2.csv`, `test_15.csv`, `m-absa_English_test.csv` | list | list |
-| `test_14.csv`, `test_16.csv`, `Arabic_train.csv`, `m-absa-english-train.csv` | scalar, list when multi-aspect | list |
-| `m-absa-arabic-train.csv`, `m-absa_Arabic_test.csv` | scalar, `" , "`-separated when multi-aspect | same |
-
-The marker for an implicit aspect is `none` in most files, `['null']` in
-`m-absa_English_test.csv`, and repeated (`none , none`) in the Arabic M-ABSA
-files when a sentence carries several implicit aspects.
-
-Normalize on load rather than assuming one form. Note that the split is on
-`" , "` with surrounding spaces, never on a bare comma — a few aspect terms
-contain one as literal text (`club soda, filled with ice, no lime` in
-`English_train.csv`):
-
-```python
-import ast
-
-NULLS = {"none", "null", "nan", ""}
-
-def as_list(value):
-    """Labels from any of the three serializations; [] for an implicit/absent aspect."""
-    s = "" if value is None else str(value).strip()
-    if not s:
-        return []
-    if s.startswith("["):
-        try:
-            parsed = ast.literal_eval(s)
-        except (ValueError, SyntaxError):
-            parsed = [s]
-        items = parsed if isinstance(parsed, list) else [parsed]
-    elif " , " in s:
-        items = s.split(" , ")
-    else:
-        items = [s]
-    return [i for i in (str(x).strip() for x in items) if i.lower() not in NULLS]
-```
-
-`paraphrases` is always a stringified list and parses with `ast.literal_eval`.
-
 ---
 
 ## Knowledge graphs
