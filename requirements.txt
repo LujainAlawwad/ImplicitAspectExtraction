@@ -1,1 +1,43 @@
-# Populate with exact versions from Colab
+# Environment used for all reported experiments.
+# Google Colab, Ubuntu 22.04 LTS, Python 3.12, NVIDIA A100 SXM4 40GB (High-RAM runtime).
+#
+# PyTorch is NOT pinned here because it must match the CUDA build of the host.
+# On Colab it is preinstalled (2.10, CUDA 12.8). Elsewhere, install it first:
+#   pip install torch==2.10.0 --index-url https://download.pytorch.org/whl/cu128
+# Then:  pip install -r requirements.txt
+
+# --- Fine-tuning stack (QLoRA on Llama-3-8B) ---
+transformers==4.56.2
+peft==0.19.1                 # 0.18.1 was used for the English runs
+trl==0.22.2
+bitsandbytes==0.49.2
+accelerate==1.13.0
+unsloth==2026.4.8            # 2026.4.6 was used for the English runs
+datasets==4.3.0
+huggingface_hub>=0.34.0
+sentencepiece
+protobuf
+safetensors
+tokenizers
+
+# --- Embeddings and similarity ---
+sentence-transformers
+
+# --- Linguistic processing ---
+spacy==3.8.*                 # also: python -m spacy download en_core_web_sm
+stanza==1.11.0               # also: stanza.download('en')
+camel-tools==1.5.7           # also: camel_data -i disambig-mle-calima-msa-r13
+
+# --- Inference APIs ---
+openai                       # paraphrase generation (gpt-4.1-mini)
+replicate                    # zero-shot prompting baseline
+
+# --- Knowledge graph, data handling, evaluation ---
+networkx
+pandas
+numpy
+scipy
+scikit-learn
+tqdm
+matplotlib
+psutil
